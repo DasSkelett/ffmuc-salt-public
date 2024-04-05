@@ -9,6 +9,7 @@
 {%- set zones = salt['pillar.get']('netbox:config_context:dns_zones:zones') %}
 {%- set freifunk_net_zones = salt['pillar.get']('netbox:config_context:dns_zones:freifunk_net_zones') %}
 {%- set freifunk_net_axfr = salt['pillar.get']('netbox:config_context:dns_zones:freifunk_net_axfr_key') %}
+{%- set auth_servers = salt['mine.get']('netbox:tag_list:authorative-dns', 'minion_overlay_address', tgt_type='pillar').values() | map('regex_replace', '/\d+$', '') | list %}
 
 
 {%- for zone_key in update_keys | sort %}
@@ -26,9 +27,9 @@ key "freifunk-net-ffmuc" {
 zone "freifunk.net" {
 	type slave;
 	file "/etc/bind/zones/db.freifunk.net";
-	allow-notify { 127.0.0.1; ::1; };
+	allow-notify { 127.0.0.1; ::1; {% for auth_ip in auth_servers %}{{ auth_ip }}; {% endfor %}};
 	notify explicit;
-	also-notify port 553 { 10.8.0.39; 10.8.0.40; 10.8.0.38; 10.8.0.13; };
+	also-notify port 553 { {% for auth_ip in auth_servers %}{{ auth_ip }}; {% endfor %}};
 	masters		{ 213.160.72.212 key freifunk-net-ffmuc; };
 };
 
