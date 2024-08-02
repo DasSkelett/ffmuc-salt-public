@@ -76,6 +76,14 @@ end
 -- Raise ringbuffer size
 setRingBuffersSize(100000)
 
+{%- set rec_data = salt['mine.get']('netbox:tag_list:recursor', 'minion_id,minion_overlay_address', tgt_type='pillar').items() %}
+{%- set servers = rec_data['minion_id'].values() | list %}
+{%- for server in servers %}
+{%- if salt['mine.get'](server, 'minion_location', tgt_type='glob')[server] == salt['pillar.get']('netbox:site:slug') %}
+{%- set addr = rec_data['minion_overlay_address'][minion_id] | map('regex_replace', '/\d+$', '') %}
+newServer({address="{{ addr }}:1653", name="{{ server }}", weight=500, retries=2, id="7cd4655e-071e-4a9a-9623-834ba49ea472", sockets=6})
+{%- endfor %}
+
 {%- if 'muc01' in salt['pillar.get']('netbox:site:slug') %}
 newServer({address="10.8.0.39:1653", name="web05", weight=500, retries=2, id="7cd4655e-071e-4a9a-9623-834ba49ea472", sockets=6})
 newServer({address="10.8.0.40:1653", name="web06", weight=500, retries=2, id="d5d0a3a9-6787-479f-ad0f-106d4618ccc2", sockets=6})
