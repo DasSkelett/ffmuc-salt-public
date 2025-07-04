@@ -48,7 +48,8 @@ protocol kernel {
                             krt_prefsrc = {{ ipaddress['address'].split('/')[0] }};
                             accept;
                         }
-                        };
+                        reject;
+              };
         };
 }
 {%- endif %}{# iface == 'dummy0' #}
@@ -66,6 +67,7 @@ protocol kernel {
                                 {%- endif %} 
                                 accept;
                         }
+                        reject;
                 };
          };
 }
